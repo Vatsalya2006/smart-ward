@@ -12,6 +12,7 @@ import StaffDashboard from './pages/staff/StaffDashboard';
 import StaffPatients from './pages/staff/StaffPatients';
 import StaffPatientRecord from './pages/staff/StaffPatientRecord';
 import StaffAccessDenied from './pages/staff/StaffAccessDenied';
+import Landing from './pages/Landing';
 
 function MainLayout({ children }) {
   return (
@@ -37,12 +38,13 @@ function StaffLayout({ children }) {
 
 export default function App() {
   const location = useLocation();
-  const isLoginPage = location.pathname === '/login';
+  const isStandalonePage = location.pathname === '/login' || location.pathname === '/';
 
   return (
     <div className="min-h-screen">
-      {isLoginPage ? (
+      {isStandalonePage ? (
         <Routes>
+          <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
         </Routes>
       ) : (
@@ -83,7 +85,7 @@ export default function App() {
 
           {/* ── Admin Portal ── */}
           <Route 
-            path="/*" 
+            path="/admin/*" 
             element={
               <ProtectedRoute allowedRoles={['Admin']}>
                 <MainLayout>

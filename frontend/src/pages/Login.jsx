@@ -1,20 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Activity, Mail, Lock, User, AlertCircle, Shield, Stethoscope } from 'lucide-react';
+import { Mail, Lock, AlertCircle, Shield, Stethoscope, User } from 'lucide-react';
+import AnimatedBackground from '../components/AnimatedBackground';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('Admin');
   const [error, setError] = useState('');
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const defaultPaths = { Admin: '/', Patient: '/patient', Staff: '/staff/dashboard' };
-  const from = location.state?.from?.pathname || defaultPaths[role] || '/';
+  const defaultPaths = { Admin: '/admin', Patient: '/patient', Staff: '/staff/dashboard' };
+
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -39,7 +42,7 @@ export default function Login() {
 
     try {
       login(email, password, role);
-      const dest = defaultPaths[role] || '/';
+      const dest = location.state?.from?.pathname || defaultPaths[role] || '/admin';
       navigate(dest, { replace: true });
     } catch (err) {
       setError('Failed to login. Please check your credentials.');
@@ -47,164 +50,123 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen relative flex flex-col justify-center py-12 sm:px-6 lg:px-8 overflow-hidden">
+    <div className="min-h-screen relative flex flex-col justify-center py-12 sm:px-6 lg:px-8 overflow-hidden bg-transparent">
       
-      {/* ── Gradient Mesh Background ── */}
-      <div className="absolute inset-0 -z-10">
-        {/* Base gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-100 via-teal-50 to-green-100" />
-        {/* Mesh blobs */}
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-emerald-300/30 blur-3xl" />
-        <div className="absolute top-[10%] right-[-15%] w-[500px] h-[500px] rounded-full bg-teal-200/40 blur-3xl" />
-        <div className="absolute bottom-[-10%] left-[20%] w-[700px] h-[700px] rounded-full bg-green-200/30 blur-3xl" />
-        <div className="absolute bottom-[15%] right-[10%] w-[400px] h-[400px] rounded-full bg-emerald-400/15 blur-3xl" />
-        {/* Subtle noise overlay */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }} />
-      </div>
+      {/* ════════════ 3D Animated Background ════════════ */}
+      <AnimatedBackground />
 
-      {/* ── Logo & Heading ── */}
-      <div className="sm:mx-auto sm:w-full sm:max-w-md relative">
-        <div className="flex justify-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-500/30 transform rotate-3 transition-transform hover:rotate-6">
-            <Activity className="w-10 h-10 text-white transform -rotate-3" />
-          </div>
-        </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-emerald-950 tracking-tight">
-          Welcome to Smart Ward
-        </h2>
-        <p className="mt-2 text-center text-sm text-slate-500">
-          Secure access to your healthcare portal
-        </p>
-      </div>
-
-      {/* ── Login Card ── */}
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative">
-        <div className="bg-white/70 py-8 px-4 shadow-2xl shadow-emerald-900/10 backdrop-blur-2xl sm:rounded-2xl sm:px-10 border border-white/60">
+      {/* ════════════ LOGIN FORM CONTAINER ════════════ */}
+      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
+        
+        {/* Main Glass Card */}
+        <div className="bg-slate-900/50 backdrop-blur-2xl border border-white/10 py-10 px-6 shadow-2xl shadow-teal-900/50 sm:rounded-[2rem] sm:px-10 overflow-hidden relative">
           
+          {/* Inner subtle glow */}
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-teal-500/20 rounded-full blur-[50px] pointer-events-none" />
+
+          {/* Motion Logo */}
+          <div className="flex justify-center mb-8">
+            <div className="relative w-24 h-24 flex items-center justify-center bg-white/5 rounded-3xl border border-white/10 shadow-inner">
+              <svg 
+                viewBox="0 0 100 50" 
+                className="w-16 h-8 text-emerald-400 animate-sweep animate-pulse-glow" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="4" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <path d="M 0,25 L 20,25 L 28,10 L 40,40 L 52,5 L 60,40 L 68,25 L 100,25" />
+              </svg>
+            </div>
+          </div>
+
+          <h2 className="text-center text-3xl font-bold text-white tracking-tight mb-2">
+            Welcome to Smart Ward
+          </h2>
+          <p className="text-center text-sm text-teal-200/70 mb-8">
+            Secure access to futuristic healthcare
+          </p>
+
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-500 mt-0.5" />
-                <p className="text-sm text-red-700">{error}</p>
+              <div className="bg-red-500/10 border border-red-500/50 p-4 rounded-2xl flex items-start gap-3 backdrop-blur-sm">
+                <AlertCircle className="w-5 h-5 text-red-400 mt-0.5" />
+                <p className="text-sm text-red-200">{error}</p>
               </div>
             )}
 
             {/* Role Selector */}
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Account Type</label>
+              <label className="block text-sm font-medium text-teal-100 mb-3">Select Portal</label>
               <div className="grid grid-cols-3 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setRole('Admin')}
-                  className={`flex justify-center items-center gap-2 py-3 px-3 border-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                    role === 'Admin'
-                      ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm shadow-emerald-200'
-                      : 'bg-white border-slate-200 text-slate-500 hover:border-emerald-300 hover:text-emerald-600'
-                  }`}
-                >
-                  <Shield className="w-4 h-4" />
-                  Admin
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole('Staff')}
-                  className={`flex justify-center items-center gap-2 py-3 px-3 border-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                    role === 'Staff'
-                      ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm shadow-emerald-200'
-                      : 'bg-white border-slate-200 text-slate-500 hover:border-emerald-300 hover:text-emerald-600'
-                  }`}
-                >
-                  <Stethoscope className="w-4 h-4" />
-                  Staff
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole('Patient')}
-                  className={`flex justify-center items-center gap-2 py-3 px-3 border-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                    role === 'Patient'
-                      ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm shadow-emerald-200'
-                      : 'bg-white border-slate-200 text-slate-500 hover:border-emerald-300 hover:text-emerald-600'
-                  }`}
-                >
-                  <User className="w-4 h-4" />
-                  Patient
-                </button>
+                {[
+                  { id: 'Admin', icon: Shield },
+                  { id: 'Staff', icon: Stethoscope },
+                  { id: 'Patient', icon: User },
+                ].map(({ id, icon: Icon }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setRole(id)}
+                    className={`flex flex-col items-center gap-2 py-3 px-2 border rounded-2xl text-xs font-semibold transition-all duration-300 ${
+                      role === id
+                        ? 'bg-teal-500/20 border-teal-400 text-teal-300 shadow-[0_0_15px_rgba(45,212,191,0.2)]'
+                        : 'bg-white/5 border-white/10 text-slate-400 hover:border-teal-500/50 hover:text-teal-200 hover:bg-white/10'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    {id}
+                  </button>
+                ))}
               </div>
             </div>
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-semibold text-slate-700" htmlFor="email">
-                Email Address
-              </label>
-              <div className="mt-2 relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-emerald-400" />
+              <label className="block text-sm font-medium text-teal-100 mb-2">Email address</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-teal-500/50" />
                 </div>
                 <input
-                  id="email"
                   type="email"
                   required
-                  className="focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-11 sm:text-sm border-slate-200 rounded-xl py-3 border-2 bg-white/60 text-slate-800 placeholder-slate-400 transition-all"
-                  placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  className="block w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-500 focus:ring-2 focus:ring-teal-500/50 focus:border-teal-400 transition-colors sm:text-sm"
+                  placeholder="Enter your email"
                 />
               </div>
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-semibold text-slate-700" htmlFor="password">
-                Password
-              </label>
-              <div className="mt-2 relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-emerald-400" />
+              <label className="block text-sm font-medium text-teal-100 mb-2">Password</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-teal-500/50" />
                 </div>
                 <input
-                  id="password"
                   type="password"
                   required
-                  className="focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-11 sm:text-sm border-slate-200 rounded-xl py-3 border-2 bg-white/60 text-slate-800 placeholder-slate-400 transition-all"
-                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="block w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-slate-500 focus:ring-2 focus:ring-teal-500/50 focus:border-teal-400 transition-colors sm:text-sm"
+                  placeholder="Enter password"
                 />
               </div>
             </div>
 
-            {/* Remember / Forgot */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-slate-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-slate-600">
-                  Remember me
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <a href="#" className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors">
-                  Forgot password?
-                </a>
-              </div>
-            </div>
-
-            {/* Submit */}
-            <div>
-              <button
-                type="submit"
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg shadow-emerald-500/25 text-sm font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-200"
-              >
-                Sign in
-              </button>
-            </div>
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-2xl shadow-lg shadow-teal-500/20 text-sm font-bold text-teal-950 bg-gradient-to-r from-teal-400 to-emerald-400 hover:from-teal-300 hover:to-emerald-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-300 hover:scale-[1.02]"
+            >
+              Access Portal
+            </button>
           </form>
+
         </div>
       </div>
     </div>

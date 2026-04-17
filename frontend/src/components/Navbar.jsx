@@ -15,10 +15,10 @@ import { useAppContext } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 
 const links = [
-  { to: '/', label: 'Clinical Insights', icon: LayoutDashboard },
-  { to: '/patients', label: 'Patients', icon: Users },
-  { to: '/resources', label: 'Resources', icon: Warehouse },
-  { to: '/alerts', label: 'Alerts', icon: Bell },
+  { to: '/admin', label: 'Clinical Insights', icon: LayoutDashboard },
+  { to: '/admin/patients', label: 'Patients', icon: Users },
+  { to: '/admin/resources', label: 'Resources', icon: Warehouse },
+  { to: '/admin/alerts', label: 'Alerts', icon: Bell },
 ];
 
 export default function Navbar() {
