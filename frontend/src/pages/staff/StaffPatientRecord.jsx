@@ -2,19 +2,64 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ChevronLeft, User, Heart, Droplets, MapPin, Phone, AlertTriangle as AlertTri,
-  Activity, FileText, Pill, Calendar, ClipboardList, Download, Shield,
+  Activity, FileText, Pill, Calendar, ClipboardList, Download, Shield, UploadCloud, Eye,
 } from 'lucide-react';
 import StaffNavbar from '../../components/staff/StaffNavbar';
 import Timeline from '../../components/staff/Timeline';
 import Tabs from '../../components/staff/Tabs';
 import { mockPatients } from '../../data/mockStaffData';
+import { useAppContext } from '../../context/AppContext';
+import { uploadReport } from '../../services/patientService';
 
 export default function StaffPatientRecord() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const [uploading, setUploading] = useState(false);
+  const { patients: livePatients, refresh } = useAppContext();
 
-  const patient = mockPatients.find(p => p.id === id);
+  const mockPatient = mockPatients.find(p => p.id === id);
+  const livePatient = livePatients.find(p => p.patient_id === id || p._id === id);
+
+  const patient = mockPatient ? {
+    ...mockPatient,
+    ...(livePatient ? {
+      heart_rate: livePatient.heart_rate,
+      oxygen_level: livePatient.oxygen_level,
+      status: livePatient.condition || livePatient.status,
+    } : {})
+  } : null;
+
+  const handleFileUpload = async (e, reportName) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Data = reader.result;
+        await uploadReport(patient.id, reportName, base64Data);
+        await refresh();
+        alert(`Report ${reportName} uploaded successfully!`);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert('Failed to upload report.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleViewReport = (base64Data) => {
+    fetch(base64Data)
+      .then(res => res.blob())
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      });
+  };
 
   if (!patient) {
     navigate('/staff/access-denied');
@@ -204,22 +249,48 @@ export default function StaffPatientRecord() {
           {/* Reports Tab */}
           {activeTab === 'reports' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-in">
-              {(patient.reports || []).map((rpt, idx) => (
-                <div key={idx} className="glass-card-hover p-5 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center">
-                      <FileText className="w-4 h-4 text-sky-600" />
+              {(patient.reports || []).map((rpt, idx) => {
+                const liveReport = livePatient?.reports?.find(r => r.name === rpt.name);
+                return (
+                  <div key={idx} className="glass-card-hover p-5 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center">
+                        <FileText className="w-4 h-4 text-sky-600" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-semibold text-slate-800">{rpt.name}</h4>
+                        <p className="text-xs text-slate-500">{rpt.date} · {rpt.type}</p>
+                        {liveReport && <span className="text-[10px] text-emerald-600 font-medium">Uploaded</span>}
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-sm font-semibold text-slate-800">{rpt.name}</h4>
-                      <p className="text-xs text-slate-500">{rpt.date} · {rpt.type}</p>
+                    <div className="flex items-center gap-2">
+                      {liveReport?.file_data && (
+                        <button
+                          onClick={() => handleViewReport(liveReport.file_data)}
+                          className="p-2 rounded-lg text-sky-600 hover:bg-sky-50 transition-colors"
+                          title="View PDF"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      )}
+                      <label className="cursor-pointer p-2 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Upload PDF">
+                        {uploading ? (
+                          <div className="w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <UploadCloud className="w-4 h-4" />
+                        )}
+                        <input
+                          type="file"
+                          accept="application/pdf"
+                          className="hidden"
+                          onChange={(e) => handleFileUpload(e, rpt.name)}
+                          disabled={uploading}
+                        />
+                      </label>
                     </div>
                   </div>
-                  <button className="p-2 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Download">
-                    <Download className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 

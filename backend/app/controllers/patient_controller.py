@@ -20,3 +20,26 @@ def get_patient(patient_id: str):
     if patient:
         return format_response(True, patient, f"Patient {patient_id} found")
     return format_response(False, None, f"Patient {patient_id} not found")
+
+
+def upload_report(patient_id: str, payload: dict):
+    """Handle uploading a report for a patient."""
+    from app.models.patient_model import add_patient_report
+    from app.utils.helpers import current_timestamp
+    
+    report_name = payload.get("report_name")
+    file_data = payload.get("file_data")
+    
+    if not report_name or not file_data:
+        return format_response(False, None, "report_name and file_data are required")
+        
+    report = {
+        "name": report_name,
+        "date": current_timestamp().split("T")[0], # Just the date part
+        "type": "Uploaded",
+        "file_data": file_data
+    }
+    
+    add_patient_report(patient_id, report)
+    
+    return format_response(True, {"report": report}, f"Report {report_name} uploaded successfully")

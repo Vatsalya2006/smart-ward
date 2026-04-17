@@ -1,126 +1,311 @@
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Calendar, FileText, User as UserIcon, LogOut, Clock, Activity } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
+import { Calendar, FileText, User as UserIcon, LogOut, Clock, Activity, Eye, Download, Pill, Sparkles, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { mockPatients } from '../data/mockStaffData';
+import PatientSidebar from '../components/patient/PatientSidebar';
+import { analyzeReport } from '../services/aiService';
 
 export default function PatientDashboard() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { patients: livePatients } = useAppContext();
+  
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [checkedMeds, setCheckedMeds] = useState({});
+  const [analyzingReport, setAnalyzingReport] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState(null);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const patientData = mockPatients.find(p => p.id === user?.id);
+  const livePatient = livePatients.find(p => p.patient_id === user?.id || p._id === user?.id);
+  
+  const appointments = patientData?.appointments || [];
+  const reports = patientData?.reports || [];
+  const prescriptions = patientData?.prescriptions || [];
+
+  const handleViewReport = (base64Data) => {
+    fetch(base64Data)
+      .then(res => res.blob())
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      });
   };
 
-  return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      
+  const handleAnalyzeClick = async (report) => {
+    setAnalyzingReport(report);
+    setIsAnalyzing(true);
+    setAnalysisResult(null);
+    try {
+      const result = await analyzeReport(report.file_data);
+      if (result.success) {
+        setAnalysisResult(result.data.analysis);
+      } else {
+        setAnalysisResult("Failed to analyze the report. Please try again later.");
+      }
+    } catch (error) {
+      console.error("Analysis error:", error);
+      setAnalysisResult("An error occurred during analysis.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const closeAnalysisModal = () => {
+    setAnalyzingReport(null);
+    setAnalysisResult(null);
+  };
+
+  const toggleMedication = (idx) => {
+    setCheckedMeds(prev => ({ ...prev, [idx]: !prev[idx] }));
+  };
+
+  const renderDashboard = () => (
+    <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/80 p-6 rounded-2xl border border-emerald-100 shadow-sm backdrop-blur-md">
         <div>
           <h1 className="text-2xl font-bold text-emerald-900">Welcome, {user?.name || 'Patient'}</h1>
           <p className="text-slate-500 mt-1">Patient ID: {user?.id || 'P-XXX'}</p>
         </div>
-        <button 
-          onClick={handleLogout}
-          className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors border border-red-100"
-        >
-          <LogOut className="w-4 h-4" />
-          <span className="font-medium">Logout</span>
+      </div>
+
+      {/* Profile Card */}
+      <div className="glass-card p-6 flex flex-col items-center text-center max-w-md mx-auto">
+        <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
+          <UserIcon className="w-10 h-10 text-emerald-600" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-800">{user?.name}</h2>
+        <p className="text-slate-500 mb-6">{user?.email}</p>
+        <div className="w-full space-y-3 text-sm text-left">
+          <div className="flex justify-between border-b border-emerald-50 pb-2">
+            <span className="text-slate-500">Phone</span>
+            <span className="font-medium text-slate-800">{patientData?.contact || '+91 98765 43210'}</span>
+          </div>
+          <div className="flex justify-between border-b border-emerald-50 pb-2">
+            <span className="text-slate-500">DOB</span>
+            <span className="font-medium text-slate-800">April 15, 1981</span>
+          </div>
+          <div className="flex justify-between border-b border-emerald-50 pb-2">
+            <span className="text-slate-500">Blood Group</span>
+            <span className="font-medium text-slate-800">{patientData?.bloodGroup}</span>
+          </div>
+          <div className="flex justify-between pt-2">
+            <span className="text-slate-500">Address</span>
+            <span className="font-medium text-slate-800 text-right">{patientData?.address}</span>
+          </div>
+        </div>
+        <button className="mt-6 w-full py-2.5 bg-emerald-50 text-emerald-700 font-semibold rounded-xl hover:bg-emerald-100 transition-colors border border-emerald-200">
+          Edit Profile
         </button>
       </div>
+    </div>
+  );
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
-        {/* Profile Card */}
-        <div className="glass-card p-6 flex flex-col items-center text-center">
-          <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
-            <UserIcon className="w-10 h-10 text-emerald-600" />
-          </div>
-          <h2 className="text-xl font-bold text-slate-800">{user?.name}</h2>
-          <p className="text-slate-500 mb-6">{user?.email}</p>
-          <div className="w-full space-y-3 text-sm text-left">
-            <div className="flex justify-between border-b border-emerald-50 pb-2">
-              <span className="text-slate-500">Phone</span>
-              <span className="font-medium text-slate-800">+1 234 567 8900</span>
-            </div>
-            <div className="flex justify-between border-b border-emerald-50 pb-2">
-              <span className="text-slate-500">DOB</span>
-              <span className="font-medium text-slate-800">May 12, 1985</span>
-            </div>
-            <div className="flex justify-between pt-2">
-              <span className="text-slate-500">Address</span>
-              <span className="font-medium text-slate-800 text-right">123 Wellness Way,<br/>Health City</span>
-            </div>
-          </div>
-          <button className="mt-6 w-full py-2.5 bg-emerald-50 text-emerald-700 font-semibold rounded-xl hover:bg-emerald-100 transition-colors border border-emerald-200">
-            Edit Profile
-          </button>
+  const renderAppointments = () => (
+    <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
+          <Calendar className="w-6 h-6 text-emerald-600" />
         </div>
+        <h2 className="text-2xl font-bold text-emerald-900">Your Appointments</h2>
+      </div>
+      
+      <div className="space-y-4">
+        {appointments.map((apt, idx) => {
+          const isUpcoming = apt.status === 'upcoming';
+          return (
+            <div key={idx} className={`glass-card p-5 flex items-center justify-between ${isUpcoming ? 'border-l-4 border-l-emerald-500' : ''}`}>
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isUpcoming ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-slate-50 text-slate-400 border border-slate-200'}`}>
+                  <Calendar className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-base font-semibold text-slate-800">{apt.type}</h4>
+                  <p className="text-sm text-slate-500 mt-0.5">{apt.doctor} · {apt.date} at {apt.time}</p>
+                </div>
+              </div>
+              <span className={`stat-chip text-xs border px-3 py-1 ${isUpcoming ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-slate-50 text-slate-500 border-slate-200'}`}>
+                {isUpcoming ? 'Upcoming' : 'Completed'}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 
-        {/* Content Column */}
-        <div className="md:col-span-2 space-y-6">
+  const renderReports = () => (
+    <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-12 h-12 rounded-xl bg-sky-100 flex items-center justify-center">
+          <FileText className="w-6 h-6 text-sky-600" />
+        </div>
+        <h2 className="text-2xl font-bold text-slate-900">Medical Reports</h2>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {reports.map((rpt, idx) => {
+          const liveReport = livePatient?.reports?.find(r => r.name === rpt.name);
           
-          {/* Recent Appointments */}
-          <div className="glass-card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-emerald-600" />
-                Upcoming Appointments
-              </h3>
-              <button className="text-sm font-medium text-emerald-600 hover:text-emerald-700">View All</button>
-            </div>
-            <div className="space-y-4">
-              <div className="p-4 bg-emerald-50/60 border border-emerald-100 rounded-xl flex items-center justify-between hover:border-emerald-300 transition-colors">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-white text-emerald-600 rounded-lg border border-emerald-100">
-                    <Clock className="w-6 h-6" />
+          return (
+            <div key={idx} className="flex flex-col p-5 bg-white/80 border border-emerald-100 rounded-xl hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-emerald-600" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-slate-800">{rpt.name}</span>
+                  <span className="text-xs text-slate-500">{rpt.date} · {rpt.type}</span>
+                </div>
+              </div>
+              <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-100">
+                {liveReport?.file_data ? (
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded">Available</span>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => handleAnalyzeClick(liveReport)}
+                        className="px-3 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors flex items-center gap-1.5 border border-indigo-100"
+                      >
+                        <Sparkles className="w-4 h-4" /> Analyse
+                      </button>
+                      <button 
+                        onClick={() => handleViewReport(liveReport.file_data)}
+                        className="px-3 py-1.5 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-1.5 shadow-sm"
+                      >
+                        <Eye className="w-4 h-4" /> View PDF
+                      </button>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-medium text-slate-800">General Checkup</h4>
-                    <p className="text-sm text-slate-500">Dr. Sarah Jenkins</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-medium text-slate-800">Tomorrow</p>
-                  <p className="text-sm text-emerald-600 font-medium">10:00 AM</p>
-                </div>
+                ) : (
+                  <>
+                    <span className="text-xs font-medium text-slate-400 bg-slate-50 px-2 py-1 rounded">Awaiting Upload</span>
+                    <button disabled className="px-4 py-1.5 text-sm font-medium text-slate-400 bg-slate-100 rounded-lg border border-slate-200 cursor-not-allowed">
+                      Pending
+                    </button>
+                  </>
+                )}
               </div>
             </div>
-          </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 
-          {/* Medical Reports */}
-          <div className="glass-card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-emerald-600" />
-                Recent Reports
-              </h3>
-              <button className="text-sm font-medium text-emerald-600 hover:text-emerald-700">View All</button>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-white/60 border border-emerald-100/60 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <Activity className="w-5 h-5 text-slate-400" />
-                  <span className="font-medium text-slate-700">Blood Test Results</span>
-                </div>
-                <button className="px-3 py-1 text-sm font-medium text-emerald-600 bg-emerald-50 rounded-md hover:bg-emerald-100 border border-emerald-100">
-                  View
-                </button>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-white/60 border border-emerald-100/60 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <FileText className="w-5 h-5 text-slate-400" />
-                  <span className="font-medium text-slate-700">X-Ray Scans</span>
-                </div>
-                <button className="px-3 py-1 text-sm font-medium text-emerald-600 bg-emerald-50 rounded-md hover:bg-emerald-100 border border-emerald-100">
-                  View
-                </button>
-              </div>
-            </div>
-          </div>
-
+  const renderMedications = () => (
+    <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center">
+          <Pill className="w-6 h-6 text-indigo-600" />
+        </div>
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900">Medications Checklist</h2>
+          <p className="text-sm text-slate-500">Mark off your medicines as you take them today.</p>
         </div>
       </div>
+
+      <div className="glass-card p-2 md:p-6 space-y-3 bg-white/50">
+        {prescriptions.map((med, idx) => (
+          <div key={idx} className={`flex items-center justify-between p-4 bg-white border rounded-xl transition-all duration-300 ${checkedMeds[idx] ? 'border-indigo-300 shadow-sm bg-indigo-50/30' : 'border-slate-200 hover:border-indigo-300'}`}>
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => toggleMedication(idx)}
+                className={`w-7 h-7 rounded border-2 flex items-center justify-center transition-colors ${checkedMeds[idx] ? 'bg-indigo-500 border-indigo-500' : 'border-slate-300 hover:border-indigo-400'}`}
+              >
+                {checkedMeds[idx] && <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+              </button>
+              <div>
+                <h4 className={`font-semibold text-lg ${checkedMeds[idx] ? 'text-slate-400 line-through' : 'text-slate-800'}`}>{med.name}</h4>
+                <p className={`text-sm ${checkedMeds[idx] ? 'text-slate-400' : 'text-slate-500'}`}>{med.dosage} · {med.frequency}</p>
+              </div>
+            </div>
+            <div className="text-right hidden sm:block">
+              <span className={`text-xs font-medium px-2.5 py-1 rounded-md ${checkedMeds[idx] ? 'bg-indigo-100 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                {med.duration}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <PatientSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      
+      {/* Main Content Area */}
+      <main className="lg:pl-[260px] p-4 lg:p-8 pt-20 lg:pt-8 transition-all duration-300">
+        {activeTab === 'dashboard' && renderDashboard()}
+        {activeTab === 'appointments' && renderAppointments()}
+        {activeTab === 'reports' && renderReports()}
+        {activeTab === 'medications' && renderMedications()}
+      </main>
+
+      {/* Analysis Modal */}
+      {analyzingReport && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={closeAnalysisModal} />
+          <div className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-indigo-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-800">{analyzingReport.name} Analysis</h3>
+                  <p className="text-sm text-slate-500">AI-Powered Summary</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => handleViewReport(analyzingReport.file_data)}
+                  className="px-4 py-2 text-sm font-medium text-emerald-600 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors flex items-center gap-2 border border-emerald-100"
+                >
+                  <Eye className="w-4 h-4" /> View PDF
+                </button>
+                <button 
+                  onClick={closeAnalysisModal}
+                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto">
+              {isAnalyzing ? (
+                <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                  <div className="relative w-16 h-16">
+                    <div className="absolute inset-0 rounded-full border-4 border-indigo-100"></div>
+                    <div className="absolute inset-0 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin"></div>
+                    <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-indigo-600 animate-pulse" />
+                  </div>
+                  <h4 className="text-lg font-medium text-slate-700">Analyzing Report with Gemini AI...</h4>
+                  <p className="text-sm text-slate-500 text-center max-w-md">
+                    Reading the medical data and generating an easy-to-understand summary. This may take a few moments.
+                  </p>
+                </div>
+              ) : (
+                <div className="prose prose-emerald max-w-none">
+                  {analysisResult ? (
+                    <div className="whitespace-pre-wrap text-slate-700 leading-relaxed">
+                      {analysisResult}
+                    </div>
+                  ) : (
+                    <p className="text-red-500">Failed to load analysis.</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

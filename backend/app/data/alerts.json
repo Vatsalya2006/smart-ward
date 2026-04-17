@@ -38,5 +38,13 @@
     "patientId": "P011",
     "timestamp": "2026-04-17T07:50:00Z",
     "resolved": false
+  },
+  {
+    "alertId": "A006",
+    "type": "CRITICAL",
+    "message": "Patient PT-1001 (Arjun Mehta) — Oxygen level dropped to 88%",
+    "patientId": "PT-1001",
+    "timestamp": "2026-04-18T01:00:00Z",
+    "resolved": false
   }
 ]

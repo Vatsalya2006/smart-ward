@@ -40,3 +40,11 @@ def update_patient_status(patient_id: str, status: str):
         {"patientId": patient_id},
         {"$set": {"status": status}},
     )
+
+
+def add_patient_report(patient_id: str, report: dict):
+    """Add a report object to the patient's reports array."""
+    patients_collection.update_one(
+        {"patientId": patient_id},
+        {"$push": {"reports": report}},
+    )

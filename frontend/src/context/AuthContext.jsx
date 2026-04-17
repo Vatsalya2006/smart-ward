@@ -19,7 +19,7 @@ export function AuthProvider({ children }) {
     // Mock user login
     const mockUsers = {
       Admin: { id: 'A-101', name: 'Dr. Admin' },
-      Patient: { id: 'P-505', name: 'John Doe' },
+      Patient: { id: 'PT-1001', name: 'Arjun Mehta' },
       Staff: { id: 'S-201', name: 'Nurse Sarah' },
     };
     const userData = mockUsers[role] || mockUsers.Admin;

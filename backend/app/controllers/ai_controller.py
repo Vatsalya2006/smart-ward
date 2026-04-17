@@ -27,3 +27,23 @@ def analyze(prompt: str | None = None, patient_id: str | None = None):
     result = analyze_with_gemini(prompt)
 
     return format_response(True, {"analysis": result, "prompt_used": prompt}, "AI analysis complete")
+
+def analyze_report(payload: dict):
+    """
+    Analyze a PDF report using Gemini.
+    """
+    from app.services.ai_service import analyze_pdf_with_gemini
+    
+    base64_data = payload.get("base64_data")
+    if not base64_data:
+        return format_response(False, None, "base64_data is required")
+        
+    # Remove data URI prefix if present (e.g. data:application/pdf;base64,)
+    if "," in base64_data:
+        base64_data = base64_data.split(",")[1]
+        
+    prompt = "You are a senior medical professional. Please summarize this medical report in simple, easy-to-understand terms for a patient. Provide a 'Summary' and a few 'Key Highlights' in bullet points. Keep it concise."
+    
+    result = analyze_pdf_with_gemini(base64_data, prompt)
+    
+    return format_response(True, {"analysis": result}, "Report analysis complete")

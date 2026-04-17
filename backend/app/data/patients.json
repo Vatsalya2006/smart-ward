@@ -284,5 +284,18 @@
     "diagnosis": "Osteoporosis — Hip Fracture",
     "vitals": { "heartRate": 80, "oxygen": 95, "bpSystolic": 132, "bpDiastolic": 84 },
     "status": "stable"
+  },
+  {
+    "patientId": "PT-1001",
+    "name": "Arjun Mehta",
+    "age": 45,
+    "gender": "Male",
+    "ward": "ICU",
+    "bed": "ICU-03",
+    "roomNumber": "ICU-3",
+    "floor": "1st Floor",
+    "diagnosis": "Acute Myocardial Infarction",
+    "vitals": { "heartRate": 112, "oxygen": 88, "bpSystolic": 140, "bpDiastolic": 90 },
+    "status": "critical"
   }
 ]
