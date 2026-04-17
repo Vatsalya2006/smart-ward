@@ -104,6 +104,7 @@ export default function Dashboard() {
           <Activity className="w-3 h-3" />
           <span>Live</span>
         </div>
+        </div>
       </div>
 
       {/* ── Stat Cards ── */}
