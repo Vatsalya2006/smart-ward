@@ -7,11 +7,27 @@ import Alerts from './pages/Alerts';
 import Login from './pages/Login';
 import PatientDashboard from './pages/PatientDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import StaffSidebar from './components/staff/StaffSidebar';
+import StaffDashboard from './pages/staff/StaffDashboard';
+import StaffPatients from './pages/staff/StaffPatients';
+import StaffPatientRecord from './pages/staff/StaffPatientRecord';
+import StaffAccessDenied from './pages/staff/StaffAccessDenied';
 
 function MainLayout({ children }) {
   return (
     <>
       <Navbar />
+      <main className="lg:ml-[260px] pt-20 lg:pt-6 px-4 sm:px-6 lg:px-8 pb-12 max-w-[1400px]">
+        {children}
+      </main>
+    </>
+  );
+}
+
+function StaffLayout({ children }) {
+  return (
+    <>
+      <StaffSidebar />
       <main className="lg:ml-[260px] pt-20 lg:pt-6 px-4 sm:px-6 lg:px-8 pb-12 max-w-[1400px]">
         {children}
       </main>
@@ -33,6 +49,24 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           
+          {/* ── Medical Staff Portal ── */}
+          <Route 
+            path="/staff/*" 
+            element={
+              <ProtectedRoute allowedRoles={['Staff']}>
+                <StaffLayout>
+                  <Routes>
+                    <Route path="/dashboard" element={<StaffDashboard />} />
+                    <Route path="/patients" element={<StaffPatients />} />
+                    <Route path="/patient/:id" element={<StaffPatientRecord />} />
+                    <Route path="/access-denied" element={<StaffAccessDenied />} />
+                  </Routes>
+                </StaffLayout>
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* ── Patient Portal ── */}
           <Route 
             path="/patient/*" 
             element={
@@ -47,6 +81,7 @@ export default function App() {
             } 
           />
 
+          {/* ── Admin Portal ── */}
           <Route 
             path="/*" 
             element={

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Activity, Mail, Lock, User, AlertCircle, Shield } from 'lucide-react';
+import { Activity, Mail, Lock, User, AlertCircle, Shield, Stethoscope } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -13,7 +13,8 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || (role === 'Admin' ? '/' : '/patient');
+  const defaultPaths = { Admin: '/', Patient: '/patient', Staff: '/staff/dashboard' };
+  const from = location.state?.from?.pathname || defaultPaths[role] || '/';
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -31,7 +32,8 @@ export default function Login() {
 
     try {
       login(email, password, role);
-      navigate(from, { replace: true });
+      const dest = defaultPaths[role] || '/';
+      navigate(dest, { replace: true });
     } catch (err) {
       setError('Failed to login. Please check your credentials.');
     }
@@ -83,11 +85,11 @@ export default function Login() {
             {/* Role Selector */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Account Type</label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <button
                   type="button"
                   onClick={() => setRole('Admin')}
-                  className={`flex justify-center items-center gap-2 py-3 px-4 border-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                  className={`flex justify-center items-center gap-2 py-3 px-3 border-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
                     role === 'Admin'
                       ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm shadow-emerald-200'
                       : 'bg-white border-slate-200 text-slate-500 hover:border-emerald-300 hover:text-emerald-600'
@@ -98,8 +100,20 @@ export default function Login() {
                 </button>
                 <button
                   type="button"
+                  onClick={() => setRole('Staff')}
+                  className={`flex justify-center items-center gap-2 py-3 px-3 border-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                    role === 'Staff'
+                      ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm shadow-emerald-200'
+                      : 'bg-white border-slate-200 text-slate-500 hover:border-emerald-300 hover:text-emerald-600'
+                  }`}
+                >
+                  <Stethoscope className="w-4 h-4" />
+                  Staff
+                </button>
+                <button
+                  type="button"
                   onClick={() => setRole('Patient')}
-                  className={`flex justify-center items-center gap-2 py-3 px-4 border-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                  className={`flex justify-center items-center gap-2 py-3 px-3 border-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
                     role === 'Patient'
                       ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm shadow-emerald-200'
                       : 'bg-white border-slate-200 text-slate-500 hover:border-emerald-300 hover:text-emerald-600'

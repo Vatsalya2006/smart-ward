@@ -28,8 +28,8 @@ export default function Alerts() {
   const filterButtons = [
     { key: 'all', label: 'All', color: '' },
     { key: 'critical', label: 'Critical', color: 'text-red-600' },
-    { key: 'warning', label: 'Warning', color: 'text-amber-600' },
-    { key: 'normal', label: 'Normal', color: 'text-emerald-600' },
+    { key: 'warning', label: 'Moderate', color: 'text-amber-600' },
+    { key: 'normal', label: 'Stable', color: 'text-emerald-600' },
   ];
 
   const counts = {
@@ -52,8 +52,8 @@ export default function Alerts() {
         {[
           { label: 'Total', count: counts.all, cls: 'bg-white/70 text-slate-700 border-slate-200' },
           { label: 'Critical', count: counts.critical, cls: 'bg-red-50 text-red-600 border-red-200' },
-          { label: 'Warning', count: counts.warning, cls: 'bg-amber-50 text-amber-600 border-amber-200' },
-          { label: 'Normal', count: counts.normal, cls: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
+          { label: 'Moderate', count: counts.warning, cls: 'bg-amber-50 text-amber-600 border-amber-200' },
+          { label: 'Stable', count: counts.normal, cls: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
         ].map(({ label, count, cls }) => (
           <div key={label} className={`rounded-xl border p-4 text-center ${cls}`}>
             <p className="text-xl font-bold">{count}</p>

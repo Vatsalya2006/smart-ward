@@ -17,11 +17,17 @@ export function AuthProvider({ children }) {
 
   const login = (email, password, role) => {
     // Mock user login
+    const mockUsers = {
+      Admin: { id: 'A-101', name: 'Dr. Admin' },
+      Patient: { id: 'P-505', name: 'John Doe' },
+      Staff: { id: 'S-201', name: 'Nurse Sarah' },
+    };
+    const userData = mockUsers[role] || mockUsers.Admin;
     const mockUser = {
-      id: role === 'Admin' ? 'A-101' : 'P-505',
-      name: role === 'Admin' ? 'Dr. Admin' : 'John Doe',
+      id: userData.id,
+      name: userData.name,
       email,
-      role, // 'Admin' or 'Patient'
+      role, // 'Admin', 'Patient', or 'Staff'
     };
     setUser(mockUser);
     localStorage.setItem('mockUser', JSON.stringify(mockUser));
