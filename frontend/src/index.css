@@ -1,0 +1,117 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   SMART WARD — Global Styles
+   ============================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: #11111b;
+  color: #ededf1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #181825;
+}
+::-webkit-scrollbar-thumb {
+  background: #48465d;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #575572;
+}
+
+/* ---------- Glass Card ---------- */
+@layer components {
+  .glass-card {
+    @apply bg-dark-800/60 backdrop-blur-xl border border-dark-700/40 rounded-2xl;
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.03),
+      0 4px 24px rgba(0, 0, 0, 0.25);
+  }
+
+  .glass-card-hover {
+    @apply glass-card transition-all duration-300;
+  }
+  .glass-card-hover:hover {
+    @apply border-ward-500/30;
+    box-shadow:
+      0 0 0 1px rgba(47, 143, 78, 0.1),
+      0 8px 32px rgba(0, 0, 0, 0.35),
+      0 0 20px rgba(47, 143, 78, 0.06);
+    transform: translateY(-2px);
+  }
+
+  /* ---------- Stat Chip ---------- */
+  .stat-chip {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium;
+  }
+
+  /* ---------- Badge variants ---------- */
+  .badge-critical {
+    @apply bg-red-500/15 text-red-400 border border-red-500/20;
+  }
+  .badge-warning {
+    @apply bg-amber-500/15 text-amber-400 border border-amber-500/20;
+  }
+  .badge-normal {
+    @apply bg-emerald-500/15 text-emerald-400 border border-emerald-500/20;
+  }
+
+  /* ---------- Progress Bar ---------- */
+  .progress-track {
+    @apply w-full h-2.5 bg-dark-900 rounded-full overflow-hidden;
+  }
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-700 ease-out;
+  }
+
+  /* ---------- Loading Shimmer ---------- */
+  .shimmer-block {
+    @apply rounded-xl;
+    background: linear-gradient(
+      90deg,
+      rgba(30, 30, 46, 0.6) 25%,
+      rgba(72, 70, 93, 0.3) 50%,
+      rgba(30, 30, 46, 0.6) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+}
+
+/* ---------- Animations ---------- */
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.15); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.1); }
+  56% { transform: scale(1); }
+}
+
+.animate-heartbeat {
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+/* ---------- Gradient text ---------- */
+.gradient-text {
+  background: linear-gradient(135deg, #4ea866, #2f8f4e, #7cc48e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
